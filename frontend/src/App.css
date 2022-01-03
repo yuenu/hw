@@ -63,3 +63,19 @@
 .ant-tabs-bottom > div > .ant-tabs-nav {
   margin: 0 !important;
 }
+
+.message {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.message-name {
+  font-weight: 600;
+}
+.message-text {
+  color: #555;
+  background: #eee;
+  padding: 0 8px;
+  border-radius: 6px;
+}

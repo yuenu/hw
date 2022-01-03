@@ -1,6 +1,6 @@
 import './App.css'
 import { useState, useEffect } from 'react'
-import { Button, Input, Tag, message, Tabs } from 'antd'
+import { Button, Input, message, Tabs } from 'antd'
 import useChat, { clearMessages } from './useChat'
 
 const { TabPane } = Tabs
@@ -11,7 +11,7 @@ function App() {
   const [body, setBody] = useState('') // textBody
   const [isModalVisible, setIsModalVisible] = useState(true)
 
-  // Tabs Contorl
+  // Tabs Contorl START
   const [newTabIndex, setNewTabIndex] = useState(0)
   const [panes, setPanes] = useState([
     { title: 'Tab 1', content: 'Content of Tab Pane 1', key: '1' },
@@ -60,6 +60,7 @@ function App() {
       default:
     }
   }
+  // Tabs Contorl END
 
   const displayStatus = (payload) => {
     if (payload.msg) {
@@ -118,7 +119,16 @@ function App() {
               ) : (
                 messages.map(({ name, body }, i) => (
                   <p className="App-message" key={i}>
-                    <Tag color="blue">{name}</Tag> {body}
+                    <div
+                      className="message"
+                      style={{
+                        flexDirection:
+                          name === username ? 'row-reverse' : 'row',
+                      }}
+                    >
+                      <span className="message-name">{name}</span>
+                      <span className="message-text">{body}</span>
+                    </div>
                   </p>
                 ))
               )}
