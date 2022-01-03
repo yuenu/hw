@@ -1,13 +1,65 @@
 import './App.css'
 import { useState, useEffect } from 'react'
-import { Button, Input, Tag, message } from 'antd'
+import { Button, Input, Tag, message, Tabs } from 'antd'
 import useChat, { clearMessages } from './useChat'
+
+const { TabPane } = Tabs
 
 function App() {
   const { status, messages, sendMessage } = useChat()
   const [username, setUsername] = useState('')
   const [body, setBody] = useState('') // textBody
   const [isModalVisible, setIsModalVisible] = useState(true)
+
+  // Tabs Contorl
+  const [newTabIndex, setNewTabIndex] = useState(0)
+  const [panes, setPanes] = useState([
+    { title: 'Tab 1', content: 'Content of Tab Pane 1', key: '1' },
+    { title: 'Tab 2', content: 'Content of Tab Pane 2', key: '2' },
+  ])
+  const [activeKey, setActiveKey] = useState(panes[0].key)
+
+  const onTabChange = (activeKey) => {
+    setActiveKey(activeKey)
+  }
+
+  const add = () => {
+    const activeKey = `newTab${newTabIndex + 1}`
+    setNewTabIndex(newTabIndex + 1)
+    panes.push({ title: 'New Tab', content: 'New Tab Pane', key: activeKey })
+    setActiveKey(activeKey)
+    setPanes(panes)
+  }
+
+  const remove = (targetKey) => {
+    let lastIndex
+    panes.forEach((pane, i) => {
+      if (pane.key === targetKey) {
+        lastIndex = i - 1
+      }
+    })
+    const tempPanes = panes.filter((pane) => pane.key !== targetKey)
+    if (tempPanes.length && activeKey === targetKey) {
+      if (lastIndex >= 0) {
+        setActiveKey(tempPanes[lastIndex].key)
+      } else {
+        setActiveKey(tempPanes[0].key)
+      }
+    }
+    setPanes(tempPanes)
+  }
+
+  const onTabEdit = (targetKey, action) => {
+    switch (action) {
+      case 'add':
+        add(targetKey)
+        break
+      case 'remove':
+        remove(targetKey)
+        break
+      default:
+    }
+  }
 
   const displayStatus = (payload) => {
     if (payload.msg) {
@@ -51,18 +103,29 @@ function App() {
           Clear
         </Button>
       </div>
-
-      <div className="App-messages">
-        {messages.length === 0 ? (
-          <p style={{ color: '#ccc' }}>No messages...</p>
-        ) : (
-          messages.map(({ name, body }, i) => (
-            <p className="App-message" key={i}>
-              <Tag color="blue">{name}</Tag> {body}
-            </p>
-          ))
-        )}
-      </div>
+      <Tabs
+        type="editable-card"
+        onChange={onTabChange}
+        activeKey={activeKey}
+        onEdit={onTabEdit}
+        style={{ width: '500px' }}
+      >
+        {panes.map((pane) => (
+          <TabPane tab={pane.title} key={pane.key} closable={pane.closable}>
+            <div className="App-messages">
+              {messages.length === 0 ? (
+                <p style={{ color: '#ccc' }}>No messages...</p>
+              ) : (
+                messages.map(({ name, body }, i) => (
+                  <p className="App-message" key={i}>
+                    <Tag color="blue">{name}</Tag> {body}
+                  </p>
+                ))
+              )}
+            </div>
+          </TabPane>
+        ))}
+      </Tabs>
 
       <Input.Search
         value={body}
