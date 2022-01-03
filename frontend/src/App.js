@@ -1,7 +1,7 @@
 import './App.css'
 import { useState, useEffect } from 'react'
 import { Button, Input, Tag, message } from 'antd'
-import useChat from './useChat'
+import useChat, { clearMessages } from './useChat'
 
 function App() {
   const { status, messages, sendMessage } = useChat()
@@ -22,6 +22,17 @@ function App() {
           message.error(content)
           break
   }}}
+
+  const clearHandler = () => {
+    console.log('clear message')
+    clearMessages()
+  }
+
+  // useEffect(() => {
+  //   getMessages()
+  //   console.log('get all msessage')
+  // }, [])
+
   useEffect(() => {
     displayStatus(status)}, [status])
 
@@ -30,7 +41,7 @@ function App() {
     <div className="App">
       <div className="App-title">
         <h1>Simple Chat</h1>
-        <Button type="primary" danger >
+        <Button type="primary" danger onClick={clearHandler} >
           Clear
         </Button>
       </div>

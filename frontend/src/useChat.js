@@ -10,6 +10,10 @@ const sendData = async (data) => {
         JSON.stringify(data));
 };
 
+export const clearMessages = async () => {
+  await client.send(JSON.stringify(['clear']))
+}
+
 const useChat = () => {
 
     //define messages, status
@@ -24,22 +28,31 @@ const useChat = () => {
         const { data } = byteString;
         const [task, payload] = JSON.parse(data);    
         switch (task) {
+          case "init": {
+            setMessages(() =>  [...payload]);
+            break;
+          }
           case "output": {
             console.log("Receiving data");
             console.log(payload);
             setMessages(() =>  
             [...messages, ...payload]); break; }
-        case "status": {
-            setStatus(payload); break; }
+          case "status": {
+              setStatus(payload); break; }
+          case "cleared": {
+            setMessages([]);
+            break;
+          }
           default: break;
         }
+        console.log('task', task)
       }
-
-
+      
     return {
         status,
         messages,
-        sendMessage
+        sendMessage,
+        clearMessages,
     };
 };
 

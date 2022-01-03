@@ -41,8 +41,8 @@ db.once('open', () => {
   console.log('MongoDB connected!');
 
   // wss.on('connection', wssConnect)
-  wss.on('connection', (ws) => {   
-
+  wss.on('connection', (ws) => {
+    initData(ws)
     ws.onmessage = async (byteString) => {
         const { data } = byteString;
         const [task, payload] = JSON.parse(data);
@@ -73,9 +73,9 @@ db.once('open', () => {
           */
          case "clear": {
            Message.deleteMany({}, ()=>
-           braodcastMessage(["cleared"],{
+           broadcastMessage(["cleared"],{
              type: "info",
-             msg: "Message"
+             msg: "Delete All Messages"
            })
           );
          }
@@ -87,7 +87,7 @@ db.once('open', () => {
     const PORT = process.env.port || 4000
 
     server.listen(PORT, () => {
-        console.log(`Listening on http:/localhost:${PORT}`)
+        console.log(`Listening on http://localhost:${PORT}`)
   })
 
 
