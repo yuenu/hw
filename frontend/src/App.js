@@ -1,5 +1,5 @@
 import './App.css'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Button, Input, message, Tabs } from 'antd'
 import useChat, { clearMessages } from './useChat'
 
@@ -10,6 +10,8 @@ function App() {
   const [username, setUsername] = useState('')
   const [body, setBody] = useState('') // textBody
   const [isModalVisible, setIsModalVisible] = useState(true)
+
+  const messageRef = useRef()
 
   // Tabs Contorl START
   const [newTabIndex, setNewTabIndex] = useState(0)
@@ -89,6 +91,11 @@ function App() {
   }, [])
 
   useEffect(() => {
+    messageRef.current.scrollTop = messageRef.current.scrollHeight
+  }, [isModalVisible])
+
+  useEffect(() => {
+    messageRef.current.scrollTop = messageRef.current.scrollHeight
     displayStatus(status)
   }, [status])
 
@@ -113,12 +120,13 @@ function App() {
       >
         {panes.map((pane) => (
           <TabPane tab={pane.title} key={pane.key} closable={pane.closable}>
-            <div className="App-messages">
+            <div className="App-messages" ref={messageRef}>
               {messages.length === 0 ? (
                 <p style={{ color: '#ccc' }}>No messages...</p>
               ) : (
+                !isModalVisible &&
                 messages.map(({ name, body }, i) => (
-                  <p className="App-message" key={i}>
+                  <div className="App-message" key={i}>
                     <div
                       className="message"
                       style={{
@@ -129,7 +137,7 @@ function App() {
                       <span className="message-name">{name}</span>
                       <span className="message-text">{body}</span>
                     </div>
-                  </p>
+                  </div>
                 ))
               )}
             </div>
@@ -143,6 +151,11 @@ function App() {
         enterButton="Send"
         placeholder="Type a message here..."
         onSearch={(msg) => {
+          if (msg.length === 0)
+            return displayStatus({
+              type: 'error',
+              msg: 'Message can not be empty',
+            })
           sendMessage({ name: username, body: msg })
           setBody('')
         }}
