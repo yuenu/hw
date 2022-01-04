@@ -11,7 +11,6 @@ function App() {
   const [body, setBody] = useState('') // textBody
   const [isModalVisible, setIsModalVisible] = useState(true)
   const messageRef = useRef()
-  const [currentMessage, setCurrentMessage] = useState(messages)
   //  hw9
   const [receiver, setReceiver] = useState(null)
   const [modalInit, setModalInit] = useState(true)
@@ -30,10 +29,9 @@ function App() {
   }
 
   const add = () => {
-    const activeKey = receiver
     setNewTabIndex(newTabIndex + 1)
-    panes.push({ title: receiver, key: activeKey })
-    setActiveKey(activeKey)
+    panes.push({ title: receiver, key: receiver })
+    setActiveKey(receiver)
     setPanes(panes)
   }
 
@@ -137,16 +135,18 @@ function App() {
                 <p style={{ color: '#ccc' }}>No messages...</p>
               ) : (
                 !isModalVisible &&
-                messages.map(({ name, body }, i) => (
+                messages.map(({ sender, body, receiver }, i) => (
                   <div className="App-message" key={i}>
                     <div
                       className="message"
                       style={{
                         flexDirection:
-                          name === username ? 'row-reverse' : 'row',
+                          sender === username ? 'row-reverse' : 'row',
                       }}
                     >
-                      <span className="message-name">{name}</span>
+                      <span className="message-name">
+                        {sender === username ? sender : receiver}
+                      </span>
                       <span className="message-text">{body}</span>
                     </div>
                   </div>
@@ -168,7 +168,9 @@ function App() {
               type: 'error',
               msg: 'Message can not be empty',
             })
-          sendMessage({ name: username, body: msg })
+          const message = { sender: username, body: msg, receiver: receiver }
+          console.log(message)
+          sendMessage(message)
           setBody('')
         }}
       ></Input.Search>

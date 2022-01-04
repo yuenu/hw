@@ -48,8 +48,8 @@ db.once('open', () => {
       const [task, payload] = JSON.parse(data)
       switch (task) {
         case 'input': {
-          const { name, body } = payload
-          const message = new Message({ name, body })
+          const { sender, body, receiver } = payload
+          const message = new Message({ sender, body, receiver })
           try {
             await message.save()
           } catch (e) {
