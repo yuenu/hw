@@ -10,25 +10,29 @@ function App() {
   const [username, setUsername] = useState('')
   const [body, setBody] = useState('') // textBody
   const [isModalVisible, setIsModalVisible] = useState(true)
-
   const messageRef = useRef()
+  const [currentMessage, setCurrentMessage] = useState(messages)
+  //  hw9
+  const [receiver, setReceiver] = useState(null)
+  const [modalInit, setModalInit] = useState(true)
 
   // Tabs Contorl START
   const [newTabIndex, setNewTabIndex] = useState(0)
-  const [panes, setPanes] = useState([
-    { title: 'Tab 1', content: 'Content of Tab Pane 1', key: '1' },
-    { title: 'Tab 2', content: 'Content of Tab Pane 2', key: '2' },
-  ])
-  const [activeKey, setActiveKey] = useState(panes[0].key)
+  const [panes, setPanes] = useState([])
+  const [activeKey, setActiveKey] = useState((panes[0] && panes[0].key) || null)
 
   const onTabChange = (activeKey) => {
+    const contentMessage = messages.filter(
+      (message) => message.name === username || message.name === receiver
+    )
+    console.log(contentMessage)
     setActiveKey(activeKey)
   }
 
   const add = () => {
-    const activeKey = `newTab${newTabIndex + 1}`
+    const activeKey = receiver
     setNewTabIndex(newTabIndex + 1)
-    panes.push({ title: 'New Tab', content: 'New Tab Pane', key: activeKey })
+    panes.push({ title: receiver, key: activeKey })
     setActiveKey(activeKey)
     setPanes(panes)
   }
@@ -54,7 +58,8 @@ function App() {
   const onTabEdit = (targetKey, action) => {
     switch (action) {
       case 'add':
-        add(targetKey)
+        setIsModalVisible(true)
+
         break
       case 'remove':
         remove(targetKey)
@@ -64,6 +69,7 @@ function App() {
   }
   // Tabs Contorl END
 
+  // SNACKBAR
   const displayStatus = (payload) => {
     if (payload.msg) {
       const { type, msg } = payload
@@ -91,11 +97,17 @@ function App() {
   }, [])
 
   useEffect(() => {
-    messageRef.current.scrollTop = messageRef.current.scrollHeight
+    if (!isModalVisible && receiver) add()
+  }, [isModalVisible, receiver])
+
+  useEffect(() => {
+    if (messageRef && messageRef.current && messageRef.current.scrollHeight)
+      messageRef.current.scrollTop = messageRef.current.scrollHeight
   }, [isModalVisible])
 
   useEffect(() => {
-    messageRef.current.scrollTop = messageRef.current.scrollHeight
+    if (messageRef && messageRef.current && messageRef.current.scrollHeight)
+      messageRef.current.scrollTop = messageRef.current.scrollHeight
     displayStatus(status)
   }, [status])
 
@@ -167,22 +179,46 @@ function App() {
       >
         <div className="modal-container">
           <h1>My Chat Room</h1>
-          <Input.Search
-            placeholder="Username"
-            enterButton="Sign in"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            style={{ marginBottom: 10 }}
-            onSearch={(input) => {
-              if (input.length === 0)
-                return displayStatus({
-                  type: 'error',
-                  msg: "Username can't be empty",
-                })
-              setIsModalVisible(false)
-              localStorage.setItem('username', input)
-            }}
-          ></Input.Search>
+          {modalInit ? (
+            <>
+              <h3>Input your username</h3>
+              <Input.Search
+                placeholder="Username"
+                enterButton="Sign in"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                onSearch={(input) => {
+                  if (input.length === 0)
+                    return displayStatus({
+                      type: 'error',
+                      msg: "Username can't be empty",
+                    })
+                  setIsModalVisible(false)
+                  setModalInit(false)
+                  localStorage.setItem('username', input)
+                }}
+              ></Input.Search>
+            </>
+          ) : (
+            <>
+              <h3>Want chat with?</h3>
+              <Input.Search
+                placeholder="Chat with?"
+                enterButton="Comfirm"
+                value={receiver}
+                onChange={(e) => setReceiver(e.target.value)}
+                style={{ marginBottom: 10 }}
+                onSearch={(input) => {
+                  if (input.length === 0)
+                    return displayStatus({
+                      type: 'error',
+                      msg: "can't be empty",
+                    })
+                  setIsModalVisible(false)
+                }}
+              ></Input.Search>
+            </>
+          )}
         </div>
       </div>
     </div>

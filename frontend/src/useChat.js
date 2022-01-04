@@ -47,7 +47,6 @@ const useChat = () => {
       default:
         break
     }
-    console.log('task', task)
   }
 
   return {
