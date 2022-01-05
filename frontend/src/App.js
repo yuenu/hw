@@ -14,6 +14,24 @@ function App() {
   //  hw9
   const [receiver, setReceiver] = useState(null)
   const [modalInit, setModalInit] = useState(true)
+  const [contentMessage, setContentMessage] = useState(messages)
+
+  const fetchChatContent = () => {
+    const getMessages = messages.filter((msg) => {
+      if (
+        (msg.sender === username && msg.receiver === receiver) ||
+        (msg.sender === receiver && msg.receiver === username)
+      ) {
+        return msg
+      }
+    })
+    setContentMessage(getMessages)
+  }
+
+  const autoScroll = (ref) => {
+    if (ref.current && ref.current.scrollHeight)
+      ref.current.scrollTop = ref.current.scrollHeight
+  }
 
   // Tabs Contorl START
   const [newTabIndex, setNewTabIndex] = useState(0)
@@ -21,11 +39,8 @@ function App() {
   const [activeKey, setActiveKey] = useState((panes[0] && panes[0].key) || null)
 
   const onTabChange = (activeKey) => {
-    const contentMessage = messages.filter(
-      (message) => message.name === username || message.name === receiver
-    )
-    console.log(contentMessage)
     setActiveKey(activeKey)
+    setReceiver(activeKey)
   }
 
   const add = () => {
@@ -33,6 +48,7 @@ function App() {
     panes.push({ title: receiver, key: receiver })
     setActiveKey(receiver)
     setPanes(panes)
+    fetchChatContent()
   }
 
   const remove = (targetKey) => {
@@ -57,7 +73,6 @@ function App() {
     switch (action) {
       case 'add':
         setIsModalVisible(true)
-
         break
       case 'remove':
         remove(targetKey)
@@ -95,17 +110,16 @@ function App() {
   }, [])
 
   useEffect(() => {
-    if (!isModalVisible && receiver) add()
-  }, [isModalVisible, receiver])
-
-  useEffect(() => {
-    if (messageRef && messageRef.current && messageRef.current.scrollHeight)
-      messageRef.current.scrollTop = messageRef.current.scrollHeight
+    if (!isModalVisible && receiver && !panes.includes(receiver)) add()
   }, [isModalVisible])
 
   useEffect(() => {
-    if (messageRef && messageRef.current && messageRef.current.scrollHeight)
-      messageRef.current.scrollTop = messageRef.current.scrollHeight
+    autoScroll(messageRef)
+  }, [isModalVisible])
+
+  useEffect(() => {
+    fetchChatContent()
+    autoScroll(messageRef)
     displayStatus(status)
   }, [status])
 
@@ -131,11 +145,11 @@ function App() {
         {panes.map((pane) => (
           <TabPane tab={pane.title} key={pane.key} closable={pane.closable}>
             <div className="App-messages" ref={messageRef}>
-              {messages.length === 0 ? (
+              {contentMessage.length === 0 ? (
                 <p style={{ color: '#ccc' }}>No messages...</p>
               ) : (
                 !isModalVisible &&
-                messages.map(({ sender, body, receiver }, i) => (
+                contentMessage.map(({ sender, body, receiver }, i) => (
                   <div className="App-message" key={i}>
                     <div
                       className="message"
@@ -144,9 +158,7 @@ function App() {
                           sender === username ? 'row-reverse' : 'row',
                       }}
                     >
-                      <span className="message-name">
-                        {sender === username ? sender : receiver}
-                      </span>
+                      <span className="message-name">{sender}</span>
                       <span className="message-text">{body}</span>
                     </div>
                   </div>
