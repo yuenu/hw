@@ -1,5 +1,5 @@
 import './App.css'
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { Button, Input, message, Tabs } from 'antd'
 import useChat, { clearMessages } from './useChat'
 
@@ -16,7 +16,8 @@ function App() {
   const [modalInit, setModalInit] = useState(true)
   const [contentMessage, setContentMessage] = useState(messages)
 
-  const fetchChatContent = () => {
+  const fetchChatContent = useCallback(() => {
+    // eslint-disable-next-line array-callback-return
     const getMessages = messages.filter((msg) => {
       if (
         (msg.sender === username && msg.receiver === receiver) ||
@@ -26,7 +27,8 @@ function App() {
       }
     })
     setContentMessage(getMessages)
-  }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [messages, receiver, username])
 
   const autoScroll = (ref) => {
     if (ref.current && ref.current.scrollHeight)
@@ -41,13 +43,18 @@ function App() {
   const onTabChange = (activeKey) => {
     setActiveKey(activeKey)
     setReceiver(activeKey)
+    fetchChatContent()
   }
 
   const add = () => {
-    setNewTabIndex(newTabIndex + 1)
-    panes.push({ title: receiver, key: receiver })
+    const tabsUser = panes.map((pane) => pane.key)
+    if (!tabsUser.includes(receiver)) {
+      setNewTabIndex(newTabIndex + 1)
+      panes.push({ title: receiver, key: receiver })
+      setPanes(panes)
+    }
     setActiveKey(receiver)
-    setPanes(panes)
+    setReceiver(receiver)
     fetchChatContent()
   }
 
@@ -103,25 +110,25 @@ function App() {
   }
 
   useEffect(() => {
+    displayStatus(status)
+  }, [status])
+
+  // STORAGE USERNAME
+  useEffect(() => {
     const storgeUsername = localStorage.getItem('username')
-    if (storgeUsername !== null) {
-      setUsername(storgeUsername)
-    }
+    if (storgeUsername !== null) setUsername(storgeUsername)
   }, [])
 
   useEffect(() => {
-    if (!isModalVisible && receiver && !panes.includes(receiver)) add()
-  }, [isModalVisible])
+    if (!isModalVisible && !modalInit && receiver) add()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isModalVisible, modalInit, receiver])
 
-  useEffect(() => {
-    autoScroll(messageRef)
-  }, [isModalVisible])
-
+  // WHEN LOADING THE CHAT MESSAGES, AND SCROLL TO THE SCREEN BOTTOM
   useEffect(() => {
     fetchChatContent()
     autoScroll(messageRef)
-    displayStatus(status)
-  }, [status])
+  }, [fetchChatContent])
 
   return (
     <div className="App">
@@ -181,7 +188,6 @@ function App() {
               msg: 'Message can not be empty',
             })
           const message = { sender: username, body: msg, receiver: receiver }
-          console.log(message)
           sendMessage(message)
           setBody('')
         }}
