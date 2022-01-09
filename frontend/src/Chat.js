@@ -8,6 +8,7 @@ import {
   useMutation,
   split,
   HttpLink,
+  useQuery,
 } from '@apollo/client'
 import { getMainDefinition } from '@apollo/client/utilities'
 import { WebSocketLink } from '@apollo/client/link/ws'
@@ -55,6 +56,17 @@ const GET_MESSAGES = gql`
   }
 `
 
+const GET_DB_MESSAGES = gql`
+  query GetDbMessages {
+    getDbMessages {
+      id
+      sender
+      body
+      receiver
+    }
+  }
+`
+
 const POST_MESSAGE = gql`
   mutation ($user: String!, $content: String!) {
     postMessage(user: $user, content: $content)
@@ -62,7 +74,7 @@ const POST_MESSAGE = gql`
 `
 
 const Messages = () => {
-  const { data } = useSubscription(GET_MESSAGES)
+  const { data } = useQuery(GET_DB_MESSAGES)
   console.log(data)
   if (!data) return null
   return JSON.stringify(data)

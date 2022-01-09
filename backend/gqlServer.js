@@ -8,8 +8,10 @@ import { resolvers } from './resolvers'
 import { typeDefs } from './typeDefs'
 import dotenv from 'dotenv-defaults'
 import mongoose from 'mongoose'
+import { PubSub } from 'graphql-subscriptions'
 
 dotenv.config()
+const pubsub = new PubSub()
 
 if (!process.env.MONGO_URL) {
   console.error('Missing MONGO_URL!!!')
@@ -39,7 +41,7 @@ const LunchServer = async () => {
       execute,
       subscribe,
       onConnect(connectionParams, webSocket, context) {
-        console.log('webSocket Connected!')
+        return console.log('webSocket Connected!')
       },
       onDisconnect(webSocket, context) {
         console.log('webSocket Disconnected!')

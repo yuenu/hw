@@ -3,16 +3,24 @@ import { gql } from 'apollo-server-express'
 export const typeDefs = gql`
   type Message {
     id: ID!
-    user: String!
-    content: String!
+    sender: String!
+    body: String!
+    receiver: String!
   }
+
+  input MessageInput {
+    sender: String!
+    body: String!
+    receiver: String!
+  }
+
   type Query {
-    messages: [Message!]
+    getDbMessages: [Message!]
   }
   type Mutation {
-    postMessage(user: String!, content: String!): ID!
+    createMessage(messageInput: MessageInput): Message!
   }
   type Subscription {
-    messages: [Message!]
+    messageCreated: Message
   }
 `
