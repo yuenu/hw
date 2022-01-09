@@ -1,4 +1,7 @@
 // import Message from './models/message'
+import { PubSub } from 'graphql-subscriptions'
+
+const pubsub = new PubSub()
 
 const messages = []
 const subscribers = []
@@ -22,7 +25,7 @@ export const resolvers = {
   },
   Subscription: {
     messages: {
-      subscribe: (parent, args, { pubsub }) => {
+      subscribe: (parent, args) => {
         const channel = Math.random().toString(36).slice(2, 15)
         onMessagesUpdates(() => pubsub.publish(channel, { messages }))
         setTimeout(() => pubsub.publish(channel, { messages }), 0)

@@ -16,6 +16,16 @@ if (!process.env.MONGO_URL) {
   process.exit(1)
 }
 
+const db = mongoose.connection
+db.once('open', () => {
+  console.log('MongoDB conntected!!')
+})
+
+mongoose.connect(process.env.MONGO_URL, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+})
+
 const LunchServer = async () => {
   const app = express()
 
@@ -26,24 +36,8 @@ const LunchServer = async () => {
     resolvers,
   })
 
-  const db = mongoose.connection
-
-  db.once('open', () => {
-    console.log('MongoDB conntected!!')
-  })
-
   const subscriptionServer = SubscriptionServer.create(
-    {
-      schema,
-      execute,
-      subscribe,
-      onConnect(connectionParams, webSocket, context) {
-        console.log('webSocket Connected!')
-      },
-      onDisconnect(webSocket, context) {
-        console.log('webSocket Disconnected!')
-      },
-    },
+    { schema, execute, subscribe },
     { server: httpServer, path: '/graphql' }
   )
 
@@ -63,11 +57,6 @@ const LunchServer = async () => {
   })
   await server.start()
   server.applyMiddleware({ app })
-
-  await mongoose.connect(process.env.MONGO_URL, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  })
 
   const PORT = 4000
   httpServer.listen(PORT, () =>
