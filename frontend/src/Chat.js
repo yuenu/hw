@@ -7,102 +7,47 @@ import {
   gql,
   useMutation,
   useQuery,
+  split,
+  HttpLink,
 } from '@apollo/client'
-import { split, HttpLink } from '@apollo/client'
 import { getMainDefinition } from '@apollo/client/utilities'
-// import { WebSocketLink } from '@apollo/client/link/ws'
-// for Apollo Client v3:
-import { ApolloLink, Observable } from '@apollo/client/core'
+import { WebSocketLink } from '@apollo/client/link/ws'
 
-import { print } from 'graphql'
-import { createClient } from 'graphql-ws'
+const httpLink = new HttpLink({
+  uri: 'http://localhost:4000/graphql',
+})
 
-import ws from 'ws'
-
-class WebSocketLink extends ApolloLink {
-  client
-
-  constructor(options) {
-    super()
-    this.client = createClient(options)
-  }
-
-  request(operation) {
-    return new Observable((sink) => {
-      return this.client.subscribe(
-        { ...operation, query: print(operation.query) },
-        {
-          next: sink.next.bind(sink),
-          complete: sink.complete.bind(sink),
-          error: (err) => {
-            if (Array.isArray(err))
-              // GraphQLError[]
-              return sink.error(
-                new Error(err.map(({ message }) => message).join(', '))
-              )
-
-            if (err instanceof CloseEvent)
-              return sink.error(
-                new Error(
-                  `Socket closed with event ${err.code} ${err.reason || ''}` // reason will be available on clean closes only
-                )
-              )
-
-            return sink.error(err)
-          },
-        }
-      )
-    })
-  }
-}
-
-const wsLink = () =>
-  new WebSocketLink({
-    url: 'ws://localhost:4000/graphql',
-    webScocketImp: ws,
-    options: {
-      reconnect: true,
-    },
-  })
-
-const httpLink = () =>
-  new HttpLink({
-    uri: 'http://localhost:4000/graphql',
-  })
-
-// const wsLink = () =>
-//   new WebSocketLink({
-//     uri: 'ws://localhost:4000/subscriptions',
-//     options: {
-//       reconnect: true,
-//     },
-//   })
+const wsLink = new WebSocketLink({
+  uri: 'ws://localhost:4000/subscriptions',
+  options: {
+    reconnect: true,
+  },
+})
 
 // The split function takes three parameters:
 //
 // * A function that's called for each operation to execute
 // * The Link to use for an operation if the function returns a "truthy" value
 // * The Link to use for an operation if the function returns a "falsy" value
-const splitLink = () =>
-  split(
-    ({ query }) => {
-      const definition = getMainDefinition(query)
-      return (
-        definition.kind === 'OperationDefinition' &&
-        definition.operation === 'subscription'
-      )
-    },
-    wsLink(),
-    httpLink()
-  )
+const splitLink = split(
+  ({ query }) => {
+    const definition = getMainDefinition(query)
+    return (
+      definition.kind === 'OperationDefinition' &&
+      definition.operation === 'subscription'
+    )
+  },
+  wsLink,
+  httpLink
+)
 
 const client = new ApolloClient({
-  link: typeof window === 'undefined' ? httpLink() : splitLink(),
+  link: splitLink,
   cache: new InMemoryCache(),
 })
 
 const GET_MESSAGES = gql`
-  subscription {
+  subscription OnMessages {
     messages {
       id
       content
@@ -118,10 +63,11 @@ const POST_MESSAGE = gql`
 `
 
 const Messages = () => {
-  const data = useSubscription(GET_MESSAGES)
-  if (!data) return null
+  const { data } = useSubscription(GET_MESSAGES)
   console.log(data)
+  if (!data) return null
   return JSON.stringify(data)
+  // return <div>Cool</div>
 }
 
 const Chat = () => {

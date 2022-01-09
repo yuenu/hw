@@ -37,8 +37,18 @@ const LunchServer = async () => {
   })
 
   const subscriptionServer = SubscriptionServer.create(
-    { schema, execute, subscribe },
-    { server: httpServer, path: '/graphql' }
+    {
+      schema,
+      execute,
+      subscribe,
+      onConnect(connectionParams, webSocket, context) {
+        console.log('webSocket Connected!')
+      },
+      onDisconnect(webSocket, context) {
+        console.log('webSocket Disconnected!')
+      },
+    },
+    { server: httpServer, path: '/subscriptions' }
   )
 
   const server = new ApolloServer({
