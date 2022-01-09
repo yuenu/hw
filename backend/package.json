@@ -10,8 +10,6 @@
     "express": "^4.17.1",
     "graphql": "^16.2.0",
     "graphql-subscriptions": "^2.0.0",
-    "graphql-ws": "^5.5.5",
-    "graphql-yoga": "^2.0.0-alpha.7",
     "mongoose": "^6.1.1",
     "nodemon": "^2.0.15",
     "subscriptions-transport-ws": "^0.11.0",

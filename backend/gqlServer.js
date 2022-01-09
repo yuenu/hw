@@ -28,14 +28,11 @@ mongoose.connect(process.env.MONGO_URL, {
 
 const LunchServer = async () => {
   const app = express()
-
   const httpServer = createServer(app)
-
   const schema = makeExecutableSchema({
     typeDefs,
     resolvers,
   })
-
   const subscriptionServer = SubscriptionServer.create(
     {
       schema,

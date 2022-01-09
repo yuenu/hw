@@ -6,7 +6,6 @@ import {
   useSubscription,
   gql,
   useMutation,
-  useQuery,
   split,
   HttpLink,
 } from '@apollo/client'
