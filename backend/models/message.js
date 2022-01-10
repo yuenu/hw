@@ -4,7 +4,7 @@ const Schema = mongoose.Schema
 const MessageSchema = new Schema({
   sender: {
     type: String,
-    required: [true, 'Name field is required.'],
+    required: [true, 'Sender field is required.'],
   },
   body: {
     type: String,

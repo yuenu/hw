@@ -11,7 +11,7 @@ const INIT_MESSAGE = 'init_message'
 export const resolvers = {
   Query: {
     // messages: () => messages,
-    getDbMessages: async () => {
+    messages: async () => {
       return await Message.find()
     },
   },
@@ -26,7 +26,11 @@ export const resolvers = {
     //   subscribers.forEach((fn) => fn())
     //   return id
     // },
-    createMessage: async (parent, { sender, body, receiver }) => {
+    createMessage: async (
+      parent,
+      { messageInput: { sender, body, receiver } }
+    ) => {
+      console.log(sender, body, receiver)
       const newMessage = new Message({ sender, body, receiver })
       const res = await newMessage.save()
       console.log('message saved', res)

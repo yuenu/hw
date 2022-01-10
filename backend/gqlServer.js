@@ -13,21 +13,6 @@ import { PubSub } from 'graphql-subscriptions'
 dotenv.config()
 const pubsub = new PubSub()
 
-if (!process.env.MONGO_URL) {
-  console.error('Missing MONGO_URL!!!')
-  process.exit(1)
-}
-
-const db = mongoose.connection
-db.once('open', () => {
-  console.log('MongoDB conntected!!')
-})
-
-mongoose.connect(process.env.MONGO_URL, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
-
 const LunchServer = async () => {
   const app = express()
   const httpServer = createServer(app)
@@ -66,6 +51,21 @@ const LunchServer = async () => {
   })
   await server.start()
   server.applyMiddleware({ app })
+
+  if (!process.env.MONGO_URL) {
+    console.error('Missing MONGO_URL!!!')
+    process.exit(1)
+  }
+
+  const db = mongoose.connection
+  db.once('open', () => {
+    console.log('MongoDB conntected!!')
+  })
+
+  mongoose.connect(process.env.MONGO_URL, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
 
   const PORT = 4000
   httpServer.listen(PORT, () =>
