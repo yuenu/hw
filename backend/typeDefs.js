@@ -14,13 +14,29 @@ export const typeDefs = gql`
     receiver: String
   }
 
+  input TabMessages {
+    user: String
+    peopleTo: String
+  }
+
+  input Status {
+    type: String
+    content: String
+  }
+
   type Query {
     messages: [Message!]
+    getTabMessages(input: TabMessages): [Message]
   }
   type Mutation {
+    initMessage: [Message!]
     createMessage(messageInput: MessageInput): Message
+    clearMessages: Boolean
   }
   type Subscription {
     messageCreated: Message
+    allMessages: [Message!]
+    status(input: Status): String
+    fetchMessages: [Message!]
   }
 `

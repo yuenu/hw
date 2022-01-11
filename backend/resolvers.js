@@ -2,40 +2,48 @@ import Message from './models/message'
 import { PubSub, withFilter } from 'graphql-subscriptions'
 
 const pubsub = new PubSub()
-const INIT_MESSAGE = 'init_message'
-
-// const messages = []
-// const subscribers = []
-// const onMessagesUpdates = (fn) => subscribers.push(fn)
+const INIT_MESSAGE = 'INIT_MESSAGE'
+const MESSAGE_CREATEED = 'MESSAGE_CREATEED'
+const TOGGLE_STATUS = 'TOGGLE_STATUS'
+const FETCH_MESSAGES = 'FETCH_MESSAGES'
 
 export const resolvers = {
   Query: {
-    // messages: () => messages,
     messages: async () => {
       return await Message.find()
     },
+    getTabMessages: async (_, { input: { user, peopleTo } }) => {
+      const messages = await Message.find({
+        $or: [
+          {
+            $and: [{ sender: user }, { receiver: peopleTo }],
+          },
+          {
+            $and: [{ sender: peopleTo }, { receiver: user }],
+          },
+        ],
+      })
+      pubsub.publish(FETCH_MESSAGES)
+      return messages
+    },
   },
   Mutation: {
-    // postMessage: (parent, { user, content }) => {
-    //   const id = messages.length
-    //   messages.push({
-    //     id,
-    //     user,
-    //     content,
-    //   })
-    //   subscribers.forEach((fn) => fn())
-    //   return id
-    // },
+    initMessage: async () => {
+      const messages = await Message.find()
+      pubsub.publish(INIT_MESSAGE, {
+        allMessages: messages,
+      })
+      return messages
+    },
     createMessage: async (
-      parent,
+      _parent,
       { messageInput: { sender, body, receiver } }
     ) => {
-      console.log(sender, body, receiver)
       const newMessage = new Message({ sender, body, receiver })
       const res = await newMessage.save()
-      console.log('message saved', res)
+      console.log('message saved')
 
-      pubsub.publish('MESSAGE_CREATEED', {
+      pubsub.publish(MESSAGE_CREATEED, {
         messageCreated: {
           sender,
           body,
@@ -48,18 +56,36 @@ export const resolvers = {
         ...res._doc,
       }
     },
+    clearMessages: async () => {
+      Message.deleteMany({}, () => {
+        return true
+      })
+    },
   },
   Subscription: {
-    // messages: {
-    //   subscribe: (parent, args) => {
-    //     const channel = Math.random().toString(36).slice(2, 15)
-    //     onMessagesUpdates(() => pubsub.publish(channel, { messages }))
-    //     setTimeout(() => pubsub.publish(channel, { messages }), 0)
-    //     return pubsub.asyncIterator(channel)
-    //   },
-    // },
     messageCreated: {
-      subscribe: () => pubsub.asyncIterator('MESSAGE_CREATEED'),
+      subscribe: () => pubsub.asyncIterator(MESSAGE_CREATEED),
+    },
+    allMessages: {
+      subscribe: withFilter(
+        () => pubsub.asyncIterator(INIT_MESSAGE),
+        (payload, variables, context) => {
+          console.log(variables, context)
+          return payload
+        }
+      ),
+    },
+    status: {
+      subscribe: () => pubsub.asyncIterator(TOGGLE_STATUS),
+    },
+    fetchMessages: {
+      subscribe: withFilter(
+        () => pubsub.asyncIterator(FETCH_MESSAGES),
+        (payload, variables, context) => {
+          console.log(variables, context)
+          return payload
+        }
+      ),
     },
   },
 }
