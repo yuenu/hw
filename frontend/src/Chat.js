@@ -1,7 +1,6 @@
 import './App.css'
 import { useState, useEffect, useRef } from 'react'
 import { Button, Input, message, Tabs } from 'antd'
-// import useChat, { clearMessages } from './useChat'
 import {
   ApolloClient,
   InMemoryCache,
@@ -14,6 +13,8 @@ import {
 } from '@apollo/client'
 import { getMainDefinition } from '@apollo/client/utilities'
 import { WebSocketLink } from '@apollo/client/link/ws'
+
+const { TabPane } = Tabs
 
 const httpLink = new HttpLink({
   uri: 'http://localhost:4000/graphql',
@@ -48,27 +49,16 @@ const client = new ApolloClient({
   cache: new InMemoryCache(),
 })
 
-const GET_TAB_MESSAGES = (username, chattingWith) => {
-  const query = gql`
-    query GetTabMessages($user: String, $peopleTo: String) {
-      getTabMessages(input: { user: $user, peopleTo: $peopleTo }) {
-        id
-        sender
-        body
-        receiver
-      }
+const GET_TAB_MESSAGES = gql`
+  query GetTabMessages($user: String, $peopleTo: String) {
+    getTabMessages(input: { user: $user, peopleTo: $peopleTo }) {
+      id
+      sender
+      body
+      receiver
     }
-  `
-  const { data } = useQuery(query, {
-    variables: {
-      user: username,
-      peopleTo: chattingWith,
-    },
-  })
-  console.log(data)
-  if (!data) return null
-  return data
-}
+  }
+`
 
 const CREATE_MESSAGE = gql`
   mutation CreateMessage($sender: String, $body: String, $receiver: String) {
@@ -83,12 +73,72 @@ const CREATE_MESSAGE = gql`
   }
 `
 
-function TabMessages({ user, chattingWith }) {
-  const messages = GET_TAB_MESSAGES(user, chattingWith)
+const CLEAR_MESSAGES = gql`
+  mutation Mutation {
+    clearMessages
+  }
+`
+
+const MESSAGE_SUB = gql`
+  subscription MessageCreated {
+    messageCreated {
+      id
+      sender
+      body
+      receiver
+    }
+  }
+`
+
+const Header = ({ username, onClear, modalVisible }) => {
+  return (
+    <div className="App-title">
+      <h1>
+        {!modalVisible && username.length > 0
+          ? `${username}'s Chat Room`
+          : 'Simple Chat'}
+      </h1>
+      <Button type="primary" danger onClick={() => onClear()}>
+        Clear
+      </Button>
+    </div>
+  )
+}
+
+function TabMessages({ user, peopleTo }) {
+  const { data, loading, subscribeToMore } = useQuery(GET_TAB_MESSAGES, {
+    variables: {
+      user: user,
+      peopleTo: peopleTo,
+    },
+  })
+
+  console.log(user, peopleTo, data)
+
+  useEffect(() => {
+    let unsubscribe
+
+    if (!unsubscribe) {
+      unsubscribe = subscribeToMore({
+        document: MESSAGE_SUB,
+        updateQuery: (prev, { subscriptionData }) => {
+          if (!subscriptionData) return prev
+          const newMessage = subscriptionData.data.messageCreated
+          const updatedMessageList = Object.assign({}, prev, {
+            getTabMessages: [...prev.getTabMessages, newMessage],
+          })
+          return updatedMessageList
+        },
+      })
+    }
+
+    if (unsubscribe) return () => unsubscribe()
+  }, [subscribeToMore])
+
   return (
     <>
-      {messages && messages.getTabMessages.length > 0 ? (
-        messages.getTabMessages.map(({ sender, body, id }) => {
+      {!loading && data && data.getTabMessages.length > 0 ? (
+        data.getTabMessages.map(({ sender, body, id }) => {
           return (
             <div className="App-message" key={id}>
               <div
@@ -110,29 +160,28 @@ function TabMessages({ user, chattingWith }) {
   )
 }
 
-const { TabPane } = Tabs
-
 function Chat() {
   const [username, setUsername] = useState('')
-  const [body, setBody] = useState('') // textBody
-  const [isModalVisible, setIsModalVisible] = useState(true)
-  const messageRef = useRef()
-  //  hw9
+  const [body, setBody] = useState('')
   const [receiver, setReceiver] = useState(null)
+
+  const [modalVisible, setModalVisible] = useState(true)
   const [modalInit, setModalInit] = useState(true)
+
+  const messageRef = useRef()
 
   /**
    * grapgql
    *
    */
   const [createMessage] = useMutation(CREATE_MESSAGE)
-
+  const [clearMessages] = useMutation(CLEAR_MESSAGES)
   const autoScroll = (ref) => {
     if (ref.current && ref.current.scrollHeight)
       ref.current.scrollTop = ref.current.scrollHeight
   }
 
-  // Tabs Contorl START
+  // Tabs CONTROL START
   const [newTabIndex, setNewTabIndex] = useState(0)
   const [panes, setPanes] = useState([])
   const [activeKey, setActiveKey] = useState((panes[0] && panes[0].key) || null)
@@ -140,7 +189,8 @@ function Chat() {
   const onTabChange = (activeKey) => {
     setActiveKey(activeKey)
     setReceiver(activeKey)
-    // fetchChatContent()
+    autoScroll(messageRef)
+    console.log('tab change')
   }
 
   const add = () => {
@@ -152,7 +202,6 @@ function Chat() {
     }
     setActiveKey(receiver)
     setReceiver(receiver)
-    // fetchChatContent()
   }
 
   const remove = (targetKey) => {
@@ -176,7 +225,7 @@ function Chat() {
   const onTabEdit = (targetKey, action) => {
     switch (action) {
       case 'add':
-        setIsModalVisible(true)
+        setModalVisible(true)
         break
       case 'remove':
         remove(targetKey)
@@ -213,22 +262,20 @@ function Chat() {
   }, [])
 
   useEffect(() => {
-    if (!isModalVisible && !modalInit && receiver) add()
+    if (!modalVisible && !modalInit && receiver) add()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isModalVisible, modalInit, receiver])
+  }, [modalVisible, modalInit, receiver])
+  useEffect(() => {
+    console.log('toggle', messageRef)
+  }, [messageRef])
 
   return (
     <div className="App">
-      <div className="App-title">
-        <h1>
-          {!isModalVisible && username.length > 0
-            ? `${username}'s Chat Room`
-            : 'Simple Chat'}
-        </h1>
-        <Button type="primary" danger>
-          Clear
-        </Button>
-      </div>
+      <Header
+        onClear={clearMessages}
+        username={username}
+        modalVisible={modalVisible}
+      />
       <Tabs
         type="editable-card"
         onChange={onTabChange}
@@ -239,8 +286,8 @@ function Chat() {
         {panes.map((pane) => (
           <TabPane tab={pane.title} key={pane.key} closable={pane.closable}>
             <div className="App-messages" ref={messageRef}>
-              {!isModalVisible && (
-                <TabMessages user={username} chattingWith={receiver} />
+              {!modalVisible && (
+                <TabMessages user={username} peopleTo={receiver} />
               )}
             </div>
           </TabPane>
@@ -267,7 +314,7 @@ function Chat() {
 
       <div
         className="modal"
-        style={{ display: isModalVisible ? 'flex' : 'none' }}
+        style={{ display: modalVisible ? 'flex' : 'none' }}
       >
         <div className="modal-container">
           <h1>My Chat Room</h1>
@@ -285,7 +332,7 @@ function Chat() {
                       type: 'error',
                       msg: "Username can't be empty",
                     })
-                  setIsModalVisible(false)
+                  setModalVisible(false)
                   setModalInit(false)
                   localStorage.setItem('username', input)
                 }}
@@ -306,7 +353,7 @@ function Chat() {
                       type: 'error',
                       msg: "can't be empty",
                     })
-                  setIsModalVisible(false)
+                  setModalVisible(false)
                 }}
               ></Input.Search>
             </>

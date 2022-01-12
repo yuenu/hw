@@ -36,7 +36,5 @@ export const typeDefs = gql`
   type Subscription {
     messageCreated: Message
     allMessages: [Message!]
-    status(input: Status): String
-    fetchMessages: [Message!]
   }
 `

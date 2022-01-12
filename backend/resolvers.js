@@ -45,6 +45,7 @@ export const resolvers = {
 
       pubsub.publish(MESSAGE_CREATEED, {
         messageCreated: {
+          id: res.id,
           sender,
           body,
           receiver,
@@ -65,27 +66,6 @@ export const resolvers = {
   Subscription: {
     messageCreated: {
       subscribe: () => pubsub.asyncIterator(MESSAGE_CREATEED),
-    },
-    allMessages: {
-      subscribe: withFilter(
-        () => pubsub.asyncIterator(INIT_MESSAGE),
-        (payload, variables, context) => {
-          console.log(variables, context)
-          return payload
-        }
-      ),
-    },
-    status: {
-      subscribe: () => pubsub.asyncIterator(TOGGLE_STATUS),
-    },
-    fetchMessages: {
-      subscribe: withFilter(
-        () => pubsub.asyncIterator(FETCH_MESSAGES),
-        (payload, variables, context) => {
-          console.log(variables, context)
-          return payload
-        }
-      ),
     },
   },
 }
