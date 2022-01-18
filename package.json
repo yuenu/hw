@@ -24,7 +24,7 @@
     "server": "nodemon gqlServer.js",
     "client": "npm start --prefix client",
     "clientinstall": "npm install --prefix client",
-    "heroku-postbuild": "cd frontend && npm install && npm run build"
+    "heroku-postbuild": "cd client && npm install && npm run build"
   },
   "devDependencies": {
     "@babel/cli": "^7.16.0",

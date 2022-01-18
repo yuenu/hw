@@ -11,11 +11,7 @@ import { PubSub } from 'graphql-subscriptions'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import { dirname } from 'path'
-
-// import the "dotenv" package
 import dotenv from "dotenv";
-
-// call the config function
 dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url)
