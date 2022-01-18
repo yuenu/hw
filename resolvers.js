@@ -1,4 +1,4 @@
-import Message from './models/message'
+import Message from './models/message.js'
 import { PubSub, withFilter } from 'graphql-subscriptions'
 
 const pubsub = new PubSub()

@@ -4,12 +4,17 @@ import { SubscriptionServer } from 'subscriptions-transport-ws'
 import { makeExecutableSchema } from '@graphql-tools/schema'
 import express from 'express'
 import { ApolloServer } from 'apollo-server-express'
-import { resolvers } from './resolvers'
-import { typeDefs } from './typeDefs'
+import { resolvers } from './resolvers.js'
+import { typeDefs } from './typeDefs.js'
 import dotenv from 'dotenv-defaults'
 import mongoose from 'mongoose'
 import { PubSub } from 'graphql-subscriptions'
 import path from 'path'
+import { fileURLToPath } from 'url'
+import { dirname } from 'path'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
 const app = express()
 const pubsub = new PubSub()
 
