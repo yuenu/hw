@@ -2,7 +2,7 @@ import { ApolloClient, InMemoryCache, split, HttpLink } from '@apollo/client'
 import { getMainDefinition } from '@apollo/client/utilities'
 import { WebSocketLink } from '@apollo/client/link/ws'
 
-const websocketLink = process.env.NODE_ENV === 'development' ? `ws://localhost:${process.env.REACT_APP_PORT || 5000}/subscriptions` : `wss://localhost:${process.env.REACT_APP_PORT || 5000}/subscriptions`
+const websocketLink = process.env.NODE_ENV === 'development' ? `ws://localhost:${process.env.REACT_APP_PORT || 5000}/subscriptions` : `wss://realtime-chat-with-yuenu.herokuapp.com/subscriptions`
 
 console.log(process.env.NODE_ENV)
 const httpLink = new HttpLink({
