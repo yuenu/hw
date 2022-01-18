@@ -15,6 +15,7 @@ const pubsub = new PubSub()
 
 const LunchServer = async () => {
   const app = express()
+
   const httpServer = createServer(app)
   const schema = makeExecutableSchema({
     typeDefs,
