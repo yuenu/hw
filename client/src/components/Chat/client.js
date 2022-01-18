@@ -3,11 +3,11 @@ import { getMainDefinition } from '@apollo/client/utilities'
 import { WebSocketLink } from '@apollo/client/link/ws'
 
 const httpLink = new HttpLink({
-  uri: `${window.location.origin}/graphql`,
+  uri: `https://realtime-chat-with-yuenu.herokuapp.com/graphql`,
 })
 
 const wsLink = new WebSocketLink({
-  uri: `ws://${window.location.host}/subscriptions`,
+  uri: `ws://realtime-chat-with-yuenu.herokuapp.com/subscriptions`,
   options: {
     reconnect: true,
   },
