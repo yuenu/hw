@@ -21,6 +21,7 @@
   "scripts": {
     "dev": "nodemon ./gqlServer.js --ext js --watch src --exec babel-node",
     "start": "node gqlServer.js",
+    "server": "nodemon gqlServer.js",
     "heroku-postbuild": "cd frontend && npm install && npm run build"
   },
   "devDependencies": {
