@@ -6,12 +6,17 @@ import express from 'express'
 import { ApolloServer } from 'apollo-server-express'
 import { resolvers } from './resolvers.js'
 import { typeDefs } from './typeDefs.js'
-import dotenv from 'dotenv-defaults'
 import mongoose from 'mongoose'
 import { PubSub } from 'graphql-subscriptions'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import { dirname } from 'path'
+
+// import the "dotenv" package
+import dotenv from "dotenv";
+
+// call the config function
+dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
