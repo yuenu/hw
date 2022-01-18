@@ -17,9 +17,8 @@
     "ws": "^8.3.0"
   },
   "scripts": {
-    "server": "nodemon ./gqlServer.js --ext js --watch src --exec babel-node",
-    "start": "cd frontend && yarn start",
-    "heroku-postbuild": "cd client && npm install && npm run build"
+    "start": "nodemon ./gqlServer.js --ext js --watch src --exec babel-node",
+    "heroku-postbuild": "cd frontend && npm install && npm run build"
   },
   "devDependencies": {
     "@babel/cli": "^7.16.0",

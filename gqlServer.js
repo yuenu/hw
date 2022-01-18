@@ -9,13 +9,17 @@ import { typeDefs } from './typeDefs'
 import dotenv from 'dotenv-defaults'
 import mongoose from 'mongoose'
 import { PubSub } from 'graphql-subscriptions'
+import path from 'path'
 
 dotenv.config()
 const pubsub = new PubSub()
 
 const LunchServer = async () => {
   const app = express()
-
+  app.use(express.static(path.join(__dirname, 'frontend/build')))
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname + '/frontend/build/index.html'))
+  })
   const httpServer = createServer(app)
   const schema = makeExecutableSchema({
     typeDefs,
