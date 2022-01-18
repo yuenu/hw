@@ -8,7 +8,7 @@ const httpLink = new HttpLink({
 })
 
 const wsLink = new WebSocketLink({
-  uri: `ws://localhost:${process.env.REACT_APP_PORT || 5000}/subscriptions`,
+  uri: `wws://localhost:${process.env.REACT_APP_PORT || 5000}/subscriptions`,
   options: {
     reconnect: true,
   },
