@@ -2,13 +2,13 @@ import { ApolloClient, InMemoryCache, split, HttpLink } from '@apollo/client'
 import { getMainDefinition } from '@apollo/client/utilities'
 import { WebSocketLink } from '@apollo/client/link/ws'
 
-
+console.log(process.env.NODE_ENV)
 const httpLink = new HttpLink({
   uri: `http://localhost:${process.env.REACT_APP_PORT || 5000}/graphql`,
 })
 
 const wsLink = new WebSocketLink({
-  uri: `wws://localhost:${process.env.REACT_APP_PORT || 5000}/subscriptions`,
+  uri: `wss://localhost:${process.env.REACT_APP_PORT || 5000}/subscriptions`,
   options: {
     reconnect: true,
   },
