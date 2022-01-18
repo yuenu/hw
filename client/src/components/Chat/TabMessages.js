@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react'
-import { useLazyQuery } from '@apollo/client'
+import { useQuery } from '@apollo/client'
 import { GET_TAB_MESSAGES, MESSAGE_SUB } from './server'
 
 function TabMessages({ user, peopleTo, onTabChange, messageRef }) {
   const [messages, setMessages] = useState([])
-  const [GetTabMessages, { data, loading, subscribeToMore }] = useLazyQuery(
+  const { data, loading, subscribeToMore } = useQuery(
     GET_TAB_MESSAGES,
     {
       variables: {
@@ -19,10 +19,8 @@ function TabMessages({ user, peopleTo, onTabChange, messageRef }) {
       ref.current.scrollTop = ref.current.scrollHeight
   }
 
-  console.log('Render tab messages FC')
   useEffect(() => {
     let unsubscribe
-    console.log('toggle apollo-client subscription')
     if (!unsubscribe) {
       unsubscribe = subscribeToMore({
         document: MESSAGE_SUB,
@@ -41,7 +39,6 @@ function TabMessages({ user, peopleTo, onTabChange, messageRef }) {
   }, [subscribeToMore])
 
   useEffect(() => {
-    console.log('data:', data)
     if (data !== undefined) {
       setMessages(data.getTabMessages)
       autoScroll(messageRef)
