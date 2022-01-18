@@ -2,12 +2,13 @@ import { ApolloClient, InMemoryCache, split, HttpLink } from '@apollo/client'
 import { getMainDefinition } from '@apollo/client/utilities'
 import { WebSocketLink } from '@apollo/client/link/ws'
 
+
 const httpLink = new HttpLink({
-  uri: `https://realtime-chat-with-yuenu.herokuapp.com/graphql`,
+  uri: `http://localhost:${process.env.REACT_APP_PORT || 5000}/graphql`,
 })
 
 const wsLink = new WebSocketLink({
-  uri: `ws://realtime-chat-with-yuenu.herokuapp.com/subscriptions`,
+  uri: `ws://localhost:${process.env.REACT_APP_PORT || 5000}/subscriptions`,
   options: {
     reconnect: true,
   },
